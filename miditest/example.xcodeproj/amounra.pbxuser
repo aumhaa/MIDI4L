@@ -1,0 +1,90 @@
+// !$*UTF8*$!
+{
+	089C1669FE841209C02AAC07 /* Project object */ = {
+		activeBuildConfigurationName = Development;
+		activeTarget = 2FBBEAD608F335360078DB84 /* max-external */;
+		codeSenseManager = 41E48E0B19DD5C730046A02B /* Code sense */;
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					341,
+					20,
+					48.16259765625,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 433937492;
+			PBXWorkspaceStateSaveDate = 433937492;
+		};
+		perUserProjectItems = {
+			41E48E1219DD5C770046A02B /* XCBuildMessageTextBookmark */ = 41E48E1219DD5C770046A02B /* XCBuildMessageTextBookmark */;
+			41E48E1419DD5C770046A02B /* PBXTextBookmark */ = 41E48E1419DD5C770046A02B /* PBXTextBookmark */;
+		};
+		sourceControlManager = 41E48E0A19DD5C730046A02B /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	2FBBEAD608F335360078DB84 /* max-external */ = {
+		activeExec = 0;
+	};
+	41E48E0A19DD5C730046A02B /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	41E48E0B19DD5C730046A02B /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	41E48E1219DD5C770046A02B /* XCBuildMessageTextBookmark */ = {
+		isa = PBXTextBookmark;
+		comments = "Carbon/Carbon.h: No such file or directory";
+		fRef = 41E48E1319DD5C770046A02B /* macho-prefix.pch */;
+		fallbackIsa = XCBuildMessageTextBookmark;
+		rLen = 1;
+		rLoc = 4;
+		rType = 1;
+	};
+	41E48E1319DD5C770046A02B /* macho-prefix.pch */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = "macho-prefix.pch";
+		path = "/Users/amounra/Documents/XCode Projects/MaxSDK-6.1.4/maxcpp/examples/max/../../../c74support/max-includes/macho-prefix.pch";
+		sourceTree = "<absolute>";
+	};
+	41E48E1419DD5C770046A02B /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 41E48E1519DD5C770046A02B /* macho-prefix.pch */;
+		name = "macho-prefix.pch: 5";
+		rLen = 0;
+		rLoc = 103;
+		rType = 0;
+		vrLen = 164;
+		vrLoc = 0;
+	};
+	41E48E1519DD5C770046A02B /* macho-prefix.pch */ = {
+		isa = PBXFileReference;
+		name = "macho-prefix.pch";
+		path = "/Users/amounra/Documents/XCode Projects/MaxSDK-6.1.4/maxcpp/examples/max/../../../c74support/max-includes/macho-prefix.pch";
+		sourceTree = "<absolute>";
+	};
+}
