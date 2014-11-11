@@ -8,8 +8,69 @@ class Example : public MaxCpp6<Example> {
 public:
 	Example(t_symbol * sym, long ac, t_atom * av) { 
 		setupIO(2, 2); // inlets / outlets
+        
+        unsigned int nPorts;
+        std::string portName;
+        char cPortName[MAX_PORT_NAME_SIZE];
+        std::map<std::string, int> inPortMap;
+        std::map<std::string, int> outPortMap;
+        
+        try {
+            midiin = new RtMidiIn();
+        }
+        catch ( RtMidiError &error ) {
+            error("RtMidiIn constructor failure");
+            error.printMessage(); // TODO: print this to the Max console
+            return;
+        }
+        
+        try {
+            midiout = new RtMidiOut();
+        }
+        catch ( RtMidiError &error ) {
+            error("RtMidiOut consturctor failure");
+            error.printMessage(); // TODO: print this to the Max console
+            return;
+        }
+        
+        nPorts = midiin->getPortCount();
+        post("MIDI input Port count: %u", nPorts);
+        for ( unsigned int i=0; i<nPorts; i++ ) {
+            try {
+                portName = midiin->getPortName(i);
+                strncpy(cPortName, portName.c_str(), MAX_PORT_NAME_SIZE);
+                cPortName[MAX_PORT_NAME_SIZE - 1] = NULL;
+                post("inport %u: %s", i, cPortName);
+            }
+            catch ( RtMidiError &error ) {
+                error("Error getting MIDI input port name");
+                error.printMessage(); // TODO: print this to the Max console
+            }
+           
+        }
+        
+        post(" ");
+        
+        nPorts = midiout->getPortCount();
+        post("MIDI output port count: %u", nPorts);
+        for ( unsigned int i=0; i<nPorts; i++ ) {
+            try {
+                portName = midiout->getPortName(i);
+                strncpy(cPortName, portName.c_str(), MAX_PORT_NAME_SIZE);
+                cPortName[MAX_PORT_NAME_SIZE - 1] = NULL;
+                post("outport %u: %s", i, cPortName);
+            }
+            catch (RtMidiError &error) {
+                error("Error getting MIDI output port name");
+                error.printMessage(); // TODO: print this to the Max console
+            }
+        }
 	}
-	~Example() {}	
+	
+    ~Example() {
+        if(midiin)  delete midiin;
+        if(midiout) delete midiout;
+    }
 	
 	// methods:
 	void bang(long inlet) { 
@@ -24,6 +85,10 @@ public:
 	void test(long inlet, t_symbol * s, long ac, t_atom * av) { 
 		outlet_anything(m_outlets[1], gensym("test"), ac, av); 
 	}
+    
+private:
+    RtMidiIn*  midiin  = NULL;
+    RtMidiOut* midiout = NULL;
 };
 
 C74_EXPORT int main(void) {
@@ -33,77 +98,4 @@ C74_EXPORT int main(void) {
 	REGISTER_METHOD_FLOAT(Example, testfloat);
 	REGISTER_METHOD_LONG(Example, testint);
 	REGISTER_METHOD_GIMME(Example, test);
-
-    std::string portName;
-    char cPortName[MAX_PORT_NAME_SIZE];
-
-    std::map<std::string, int> inPortMap;
-    std::map<std::string, int> outPortMap;
-    
-	RtMidiIn  *midiin = 0;
-	RtMidiOut *midiout = 0;
-	// RtMidiIn constructor
-	try {
-		midiin = new RtMidiIn();
-	}
-	catch ( RtMidiError &error ) {
-		error.printMessage();
-		post("MIDIin exit failure");
-		exit( EXIT_FAILURE ); // TODO: probably shouldn't call exit() in a Max external. Log an error to Max console and skip logic below as necessary.
-	}
-    
-	// Check inputs.
-	unsigned int nPorts = midiin->getPortCount();
-	// std::cout << "\nThere are " << nPorts << " MIDI input sources available.\n";
-	post("InPort count: %u", nPorts);
-	for ( unsigned int i=0; i<nPorts; i++ ) {
-		try {
-			portName = midiin->getPortName(i);
-            strncpy(cPortName, portName.c_str(), MAX_PORT_NAME_SIZE);
-            cPortName[MAX_PORT_NAME_SIZE - 1] = NULL;
-			post("inport %u: %s", i, cPortName);
-		}
-		catch ( RtMidiError &error ) {
-			error.printMessage();
-			goto cleanup;
-		}
-		// std::cout << "  Input Port #" << i+1 << ": " << portName << '\n';
-	}
-    
-	// RtMidiOut constructor
-	try {
-		midiout = new RtMidiOut();
-	}
-	catch ( RtMidiError &error ) {
-		error.printMessage();
-		exit( EXIT_FAILURE );  // TODO: probably shouldn't call exit() in a Max external. Log an error to Max console and skip logic below as necessary.
-	}
-    
-    post("");
-    
-	// Check outputs.
-	nPorts = midiout->getPortCount();
-	// std::cout << "\nThere are " << nPorts << " MIDI output ports available.\n";
-	post("Outport count: %u", nPorts);
-	for ( unsigned int i=0; i<nPorts; i++ ) {
-		try {
-			portName = midiout->getPortName(i);
-            strncpy(cPortName, portName.c_str(), MAX_PORT_NAME_SIZE);
-            cPortName[MAX_PORT_NAME_SIZE - 1] = NULL;
-            post("outport %u: %s", i, cPortName);
-		}
-		catch (RtMidiError &error) {
-			error.printMessage();
-			post("MIDIout exit failure");
-			goto cleanup;
-		}
-		// std::cout << "  Output Port #" << i+1 << ": " << portName << '\n';
-	}
-	// std::cout << '\n';
-    
-	// Clean up
-cleanup:
-	delete midiin;
-	delete midiout;
-	return 0;
 }
