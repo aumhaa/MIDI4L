@@ -96,8 +96,10 @@ public:
             post("Got inport name %s", *portName);
             int portIndex = getPortIndex(inPortMap, portName);
             if (portIndex >= 0) {
-                post("Found port at index %i", portIndex);
-                openMidiInput(portIndex);
+                post("Opening port at index %i", portIndex);
+                midiin->openPort( portIndex );
+                midiin->setCallback( &midiInputCallback, this );
+                midiin->ignoreTypes( false, false, false );
             }
         }
         else {
@@ -128,8 +130,17 @@ public:
     }
     
     
-    void sendMidiByte(int byte) {
-        outlet_int(m_outlets[0], byte);
+    /**
+     * Send a multi-byte MIDI message to the outlet.
+     */
+    void sendMidi(std::vector< unsigned char > *message) {
+        void *outlet = m_outlets[0];
+        
+        int nBytes = message->size();
+        for ( int i=0; i<nBytes; i++ ) {
+            int byte = (int)message->at(i);
+            outlet_int(outlet, byte);
+        }
     }
     
     
@@ -204,19 +215,6 @@ private:
     }
     
     
-    void openMidiInput(int portIndex) {
-        midiin->openPort( portIndex );
-    
-        // TODO: not sure how to get this to compile
-        midiin->setCallback( &midiInputCallback, this );
-        
-        // Don't ignore sysex, timing, or active sensing messages.
-        // Does Max ignore timing or active sensing message?
-        midiin->ignoreTypes( false, false, false );
-        post("Reading MIDI input");
-    }
-    
-    
     /**
      * Print the port names to the Max console
      */
@@ -268,17 +266,8 @@ private:
 };
 
 
-void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData )
-{
-    MIDI4L *midi4lObject = (MIDI4L*)userData;
-    
-    int nBytes = message->size();
-    for ( int i=0; i<nBytes; i++ ) {
-        int byte = (int)message->at(i);
-        post("Byte %i: %i", i, byte);
-        
-        midi4lObject->sendMidiByte(byte);
-    }
+void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData ) {
+    ((MIDI4L*)userData)->sendMidi(message);
 }
 
 
