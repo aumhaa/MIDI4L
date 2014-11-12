@@ -14,11 +14,11 @@ t_symbol *SYM_APPEND = gensym("append");
 t_symbol *SYM_CLEAR  = gensym("clear");
 
 
-class Example : public MaxCpp6<Example> {
+class MIDI4L : public MaxCpp6<MIDI4L> {
     
 public:
     
-	Example(t_symbol * sym, long ac, t_atom * av) { 
+	MIDI4L(t_symbol * sym, long ac, t_atom * av) {
 		setupIO(1, 3); // inlets / outlets
         
         try {
@@ -41,7 +41,7 @@ public:
         printPorts(); // TODO: comment this out before shipping
 	}
 	
-    ~Example() {
+    MIDI4L() {
         if(midiin)  delete midiin;
         if(midiout) delete midiout;
     }
@@ -248,9 +248,9 @@ private:
 
 
 C74_EXPORT int main(void) {
-	Example::makeMaxClass("example");
-    REGISTER_METHOD_ASSIST(Example, assist);
-    REGISTER_METHOD(Example, bang);
-    REGISTER_METHOD_GIMME(Example, inport);
-    REGISTER_METHOD_GIMME(Example, outport);
+	MIDI4L::makeMaxClass("midi4l");
+    REGISTER_METHOD_ASSIST(MIDI4L, assist);
+    REGISTER_METHOD(MIDI4L, bang);
+    REGISTER_METHOD_GIMME(MIDI4L, inport);
+    REGISTER_METHOD_GIMME(MIDI4L, outport);
 }

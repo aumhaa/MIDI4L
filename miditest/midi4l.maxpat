@@ -69,7 +69,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 270.0, 132.0, 61.0, 22.0 ],
+					"patching_rect" : [ 265.0, 109.0, 61.0, 22.0 ],
 					"style" : "",
 					"text" : "inport foo"
 				}
@@ -128,9 +128,9 @@
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "", "", "" ],
-					"patching_rect" : [ 211.0, 175.0, 187.0, 22.0 ],
+					"patching_rect" : [ 211.0, 175.0, 106.0, 22.0 ],
 					"style" : "",
-					"text" : "example"
+					"text" : "midi4l"
 				}
 
 			}
@@ -141,7 +141,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 482.0, 89.0, 50.0, 22.0 ],
+					"patching_rect" : [ 379.0, 171.0, 50.0, 22.0 ],
 					"style" : "",
 					"text" : "clear"
 				}
