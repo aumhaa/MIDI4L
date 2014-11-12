@@ -13,6 +13,9 @@ const int OUTLET_OUTPORTS = 2;
 t_symbol *SYM_APPEND = gensym("append");
 t_symbol *SYM_CLEAR  = gensym("clear");
 
+void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData );
+
+
 
 class MIDI4L : public MaxCpp6<MIDI4L> {
     
@@ -125,6 +128,11 @@ public:
     }
     
     
+    void sendMidiByte(int byte) {
+        outlet_int(m_outlets[0], byte);
+    }
+    
+    
 private:
     
     RtMidiIn  *midiin  = NULL;
@@ -200,22 +208,12 @@ private:
         midiin->openPort( portIndex );
     
         // TODO: not sure how to get this to compile
-        //midiin->setCallback( &(MIDI4L::midiInputCallback) );
+        midiin->setCallback( &midiInputCallback, this );
         
         // Don't ignore sysex, timing, or active sensing messages.
         // Does Max ignore timing or active sensing message?
         midiin->ignoreTypes( false, false, false );
         post("Reading MIDI input");
-    }
-    
-    
-    void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData )
-    {
-        int nBytes = message->size();
-        for ( int i=0; i<nBytes; i++ ) {
-            int byte = (int)message->at(i);
-            post("Byte %i: %i", i, byte);
-        }
     }
     
     
@@ -268,6 +266,21 @@ private:
         error(cstr);
     }
 };
+
+
+void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData )
+{
+    MIDI4L *midi4lObject = (MIDI4L*)userData;
+    
+    int nBytes = message->size();
+    for ( int i=0; i<nBytes; i++ ) {
+        int byte = (int)message->at(i);
+        post("Byte %i: %i", i, byte);
+        
+        midi4lObject->sendMidiByte(byte);
+    }
+}
+
 
 
 C74_EXPORT int main(void) {
