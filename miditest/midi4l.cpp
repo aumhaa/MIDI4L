@@ -94,7 +94,7 @@ public:
             int portIndex = getPortIndex(inPortMap, portName);
             if (portIndex >= 0) {
                 post("Found port at index %i", portIndex);
-                // TODO: now hook up the port
+                openMidiInput(portIndex);
             }
         }
         else {
@@ -192,6 +192,29 @@ private:
         }
         else {
             return iter->second;
+        }
+    }
+    
+    
+    void openMidiInput(int portIndex) {
+        midiin->openPort( portIndex );
+    
+        // TODO: not sure how to get this to compile
+        //midiin->setCallback( &(MIDI4L::midiInputCallback) );
+        
+        // Don't ignore sysex, timing, or active sensing messages.
+        // Does Max ignore timing or active sensing message?
+        midiin->ignoreTypes( false, false, false );
+        post("Reading MIDI input");
+    }
+    
+    
+    void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData )
+    {
+        int nBytes = message->size();
+        for ( int i=0; i<nBytes; i++ ) {
+            int byte = (int)message->at(i);
+            post("Byte %i: %i", i, byte);
         }
     }
     
