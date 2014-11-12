@@ -2,16 +2,22 @@
 #include "RtMidi.h"
 #include "maxcpp6.h"
 
+typedef std::map<t_symbol*,int> portmap;
+
 const int MAX_STR_SIZE = 512;
 
 const int OUTLET_MIDIIN   = 0;
 const int OUTLET_INPORTS  = 1;
 const int OUTLET_OUTPORTS = 2;
 
+t_symbol *SYM_APPEND = gensym("append");
+t_symbol *SYM_CLEAR  = gensym("clear");
+
 
 class Example : public MaxCpp6<Example> {
     
 public:
+    
 	Example(t_symbol * sym, long ac, t_atom * av) { 
 		setupIO(1, 3); // inlets / outlets
         
@@ -20,7 +26,7 @@ public:
         }
         catch ( RtMidiError &error ) {
             error("RtMidiIn constructor failure");
-            error.printMessage(); // TODO: print this to the Max console
+            printError(error);
         }
         
         try {
@@ -28,7 +34,7 @@ public:
         }
         catch ( RtMidiError &error ) {
             error("RtMidiOut consturctor failure");
-            error.printMessage(); // TODO: print this to the Max console
+            printError(error);
         }
         
         refreshPorts();
@@ -41,6 +47,9 @@ public:
     }
     
     
+    /**
+     * Setup inlet and outlet assistance messages.
+     */
     void assist(void *b, long io, long index, char *msg) {
         if (io == ASSIST_INLET) {
             strncpy_zero(msg, "send MIDI output (list), list ports (bang), set input port (inport name), set output port (outport name)", MAX_STR_SIZE);
@@ -61,13 +70,22 @@ public:
     }
     
     
-    // List all input and output ports. Also refreshes the port list in case a device was plugged in or unplugged.
+    /**
+     * List all input and output ports.
+     * Also refreshes the port list in case a device was plugged in or unplugged.
+     */
 	void bang(long inlet) {
         refreshPorts();
         dumpPorts(m_outlets[OUTLET_INPORTS],  inPortMap);
         dumpPorts(m_outlets[OUTLET_OUTPORTS], outPortMap);
     }
     
+    
+    /**
+     * Set the input port by name.
+     * If the name is valid, this object will start sending messages out it's outlet when MIDI is received.
+     * If the name is invalid, an error is printed to the Max console and nothing else happens.
+     */
     void inport(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
@@ -76,6 +94,7 @@ public:
             int portIndex = getPortIndex(inPortMap, portName);
             if (portIndex >= 0) {
                 post("Found port at index %i", portIndex);
+                // TODO: now hook up the port
             }
         }
         else {
@@ -83,6 +102,12 @@ public:
         }
     }
     
+    
+    /**
+     * Set the output port by name.
+     * If the name is valid, this object will pass messages received to it's first inlet to the MIDI port.
+     * If the name is invalid, an error is printed to the Max console and nothing else happens.
+     */
     void outport(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
@@ -91,6 +116,7 @@ public:
             int portIndex = getPortIndex(outPortMap, portName);
             if (portIndex >= 0) {
                 post("Found port at index %i", portIndex);
+                // TODO: now hook up the port
             }
         }
         else {
@@ -100,15 +126,19 @@ public:
     
     
 private:
+    
     RtMidiIn  *midiin  = NULL;
     RtMidiOut *midiout = NULL;
     int numInPorts  = -1;
     int numOutPorts = -1;
-    std::map<t_symbol *, int> inPortMap;
-    std::map<t_symbol *, int> outPortMap;
+    portmap inPortMap;
+    portmap outPortMap;
     
     
-    // Get the list of available ports. Can be called repeatedly to regenerate the list if a MIDI device is plugged in or unplugged.
+    /**
+     * Get the list of available ports. 
+     * Can be called repeatedly to regenerate the list if a MIDI device is plugged in or unplugged.
+     */
     void refreshPorts() {
         char cPortName[MAX_STR_SIZE];
         
@@ -127,8 +157,7 @@ private:
                 }
                 catch ( RtMidiError &error ) {
                     error("Error getting MIDI input port name");
-                    error.printMessage(); // TODO: print this to the Max console
-                }
+                    printError(error);                }
             }
         }
         
@@ -140,21 +169,23 @@ private:
                     strncpy(cPortName, portName.c_str(), MAX_STR_SIZE);
                     cPortName[MAX_STR_SIZE - 1] = NULL;
                     
-                    // TODO: not sure if we should store the pointers or what they reference?
                     outPortMap[gensym(cPortName)] = i;
                 }
                 catch (RtMidiError &error) {
                     error("Error getting MIDI output port name");
-                    error.printMessage(); // TODO: print this to the Max console
+                    printError(error);
                 }
             }
         }
     }
 
     
-    // Returns the port index for the given portName in the given portMap, or -1 if the port is not found
-    int getPortIndex(std::map<t_symbol*,int> portMap, t_symbol *portName) {
-        std::map<t_symbol*,int>::iterator iter = portMap.find(portName);
+    /**
+     * Lookup a port index given a portMap (input or output port map) and a portName.
+     * Returns the port index, or -1 if the port is not found
+     */
+    int getPortIndex(portmap portMap, t_symbol *portName) {
+        portmap::iterator iter = portMap.find(portName);
         if (iter == portMap.end()) {
             error("Port not found: %s", *portName);
             return -1;
@@ -165,11 +196,13 @@ private:
     }
     
     
-    // Print the port names to the Max console
+    /**
+     * Print the port names to the Max console
+     */
     void printPorts() {
         post("MIDI input Port count: %u", numInPorts);
         
-        for( std::map<t_symbol*,int>::iterator iter=inPortMap.begin(); iter!=inPortMap.end(); iter++ ) {
+        for( portmap::iterator iter=inPortMap.begin(); iter!=inPortMap.end(); iter++ ) {
             t_symbol *portName = (*iter).first;
             post("input %u: %s", (*iter).second, *portName);
         }
@@ -177,24 +210,39 @@ private:
         post(" ");
         post("MIDI output port count: %u", numOutPorts);
         
-        for( std::map<t_symbol*,int>::iterator iter=outPortMap.begin(); iter!=outPortMap.end(); iter++ ) {
+        for( portmap::iterator iter=outPortMap.begin(); iter!=outPortMap.end(); iter++ ) {
             t_symbol* portName = (*iter).first;
             post("output %u: %s", (*iter).second, *portName);
         }
     }
     
     
-    void dumpPorts(void *outlet, std::map<t_symbol*,int> portMap) {
-        t_symbol *appendSym = gensym("append"); // make a constant? and for clear?
+    /**
+     * Send messages to build a umenus for the input (2nd outlet) and output (3rd outlet) ports
+     */
+    void dumpPorts(void *outlet, portmap portMap) {
         t_atom atoms[1];
         
-        outlet_anything(outlet, gensym("clear"), 0, NULL);
+        outlet_anything(outlet, SYM_CLEAR, 0, NULL);
         
-        for( std::map<t_symbol*,int>::iterator iter=portMap.begin(); iter!=portMap.end(); iter++ ) {
+        for( portmap::iterator iter=portMap.begin(); iter!=portMap.end(); iter++ ) {
             t_symbol *portName = (*iter).first;
             atom_setsym(&atoms[0], portName);
-            outlet_anything(outlet, appendSym, 1, atoms);
+            outlet_anything(outlet, SYM_APPEND, 1, atoms);
         }
+    }
+    
+    
+    /**
+     * Print an RtMidiError to the Max console
+     * NOTE: I have not been able to test this code because I don't know how to trigger an RtMidiError. It always "just works" for me.
+     */
+    void printError(RtMidiError &error) {
+        std::string msg = error.getMessage();
+        char cstr[MAX_STR_SIZE];
+        strncpy(cstr, msg.c_str(), MAX_STR_SIZE);
+        cstr[MAX_STR_SIZE - 1] = NULL;
+        error(cstr);
     }
 };
 
