@@ -85,6 +85,31 @@ public:
     
     
     /**
+     * Receives MIDI message bytes from the Max patch and sends them to the midiout.
+     */
+    void midi(long inlet, long byte) {
+        post("IN MIDI");
+        
+        // TODO: this logic works for 3-bytes note-on messages but probably doesn't work with various other messages.
+        // Simplest thing may be to use a [thresh] object after [midiformat]. See the [midiformat] help patch.
+        // If we do that, then this method needs to change to accept a list.
+        if(message.size() < 3) {
+            message.push_back( byte );
+        }
+        
+        if(message.size() >= 3 && midiout && midiout->isPortOpen()) {
+            post("Sending message");
+            int nBytes = message.size();
+            for ( int i=0; i<nBytes; i++ ) {
+                post("%i", message.at(i));
+            }
+            midiout->sendMessage( &message );
+            message.clear();
+        }
+    }
+    
+    
+    /**
      * Set the input port by name.
      * If the name is valid, this object will start sending messages out it's outlet when MIDI is received.
      * If the name is invalid, an error is printed to the Max console and nothing else happens.
@@ -95,11 +120,15 @@ public:
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
             post("Got inport name %s", *portName);
             int portIndex = getPortIndex(inPortMap, portName);
-            if (portIndex >= 0) {
-                post("Opening port at index %i", portIndex);
+            if (midiin && portIndex >= 0) {
+                midiin->cancelCallback();
+                midiin->closePort();                
+                
+                post("Opening input port at index %i", portIndex);
                 midiin->openPort( portIndex );
                 midiin->setCallback( &midiInputCallback, this );
-                midiin->ignoreTypes( false, false, false );
+                midiin->ignoreTypes( false, true, true ); // ignore MIDI timing and active sensing messages (but not SysEx)
+                // TODO? midiin->setErrorCallback()
             }
         }
         else {
@@ -119,9 +148,12 @@ public:
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
             post("Got outport name %s", *portName);
             int portIndex = getPortIndex(outPortMap, portName);
-            if (portIndex >= 0) {
-                post("Found port at index %i", portIndex);
-                // TODO: now hook up the port
+            if (midiout && portIndex >= 0) {
+                midiout->closePort();
+                
+                post("Opening output port at index %i", portIndex);
+                midiout->openPort( portIndex );
+                // TODO? midiout->setErrorCallback()
             }
         }
         else {
@@ -132,14 +164,20 @@ public:
     
     /**
      * Send a multi-byte MIDI message to the outlet.
+     * This is part of the midiin callback, it is not part of the interface with the Max patch.
      */
     void sendMidi(std::vector< unsigned char > *message) {
         void *outlet = m_outlets[0];
         
-        int nBytes = message->size();
-        for ( int i=0; i<nBytes; i++ ) {
-            int byte = (int)message->at(i);
-            outlet_int(outlet, byte);
+        if(outlet && message) { // these somehow can end up NULL in M4L when switching between Max and Live
+            int nBytes = message->size();
+            for ( int i=0; i<nBytes; i++ ) {
+                // TODO: send SysEx messages to a different outlet (note, the current message may be one part of a long SysEx stream,
+                // so we are going to have to keep track of SysEx state across multiple messages)
+                
+                int byte = (int)message->at(i);
+                outlet_int(outlet, byte);
+            }
         }
     }
     
@@ -152,6 +190,7 @@ private:
     int numOutPorts = -1;
     portmap inPortMap;
     portmap outPortMap;
+    std::vector<unsigned char> message;
     
     
     /**
@@ -276,6 +315,7 @@ C74_EXPORT int main(void) {
 	MIDI4L::makeMaxClass("midi4l");
     REGISTER_METHOD_ASSIST(MIDI4L, assist);
     REGISTER_METHOD(MIDI4L, bang);
+    REGISTER_METHOD_LONG(MIDI4L, midi);
     REGISTER_METHOD_GIMME(MIDI4L, inport);
     REGISTER_METHOD_GIMME(MIDI4L, outport);
 }
