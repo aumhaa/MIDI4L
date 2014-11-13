@@ -86,25 +86,27 @@ public:
     
     /**
      * Receives MIDI message bytes from the Max patch and sends them to the midiout.
+     * NOTE: RtMidi needs to send all bytes of a MIDI on message at the same time.
+     *       To achieve this, in Max, you should do [midiformat] => [thresh] => [prepend sendmidi] => [midi4l]
+     *       I use [thresh 1] to minimize the latency. So far it seems safe to do so.
      */
-    void midi(long inlet, long byte) {
-        post("IN MIDI");
-        
-        // TODO: this logic works for 3-bytes note-on messages but probably doesn't work with various other messages.
-        // Simplest thing may be to use a [thresh] object after [midiformat]. See the [midiformat] help patch.
-        // If we do that, then this method needs to change to accept a list.
-        if(message.size() < 3) {
-            message.push_back( byte );
+    void sendmidi(long inlet, t_symbol *s, long ac, t_atom *av) {
+        message.clear();
+        for (int i=0; i<ac; i++) {
+            unsigned char value = atom_getlong(av+i);
+            message.push_back(value);
         }
         
-        if(message.size() >= 3 && midiout && midiout->isPortOpen()) {
-            post("Sending message");
-            int nBytes = message.size();
-            for ( int i=0; i<nBytes; i++ ) {
-                post("%i", message.at(i));
-            }
+        /*
+        post("Sending MIDI message");
+        int nBytes = message.size();
+        for ( int i=0; i<nBytes; i++ ) {
+            post("%i", message.at(i));
+        } 
+        */
+        
+        if(midiout && midiout->isPortOpen()) {
             midiout->sendMessage( &message );
-            message.clear();
         }
     }
     
@@ -315,7 +317,7 @@ C74_EXPORT int main(void) {
 	MIDI4L::makeMaxClass("midi4l");
     REGISTER_METHOD_ASSIST(MIDI4L, assist);
     REGISTER_METHOD(MIDI4L, bang);
-    REGISTER_METHOD_LONG(MIDI4L, midi);
+    REGISTER_METHOD_GIMME(MIDI4L, sendmidi);
     REGISTER_METHOD_GIMME(MIDI4L, inport);
     REGISTER_METHOD_GIMME(MIDI4L, outport);
 }
