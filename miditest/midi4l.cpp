@@ -55,12 +55,19 @@ public:
         }
         
         refreshPorts();
-        // printPorts(); 
+        // printPorts();
 	}
 	
-    MIDI4L() {
-        if(midiin)  delete midiin;
-        if(midiout) delete midiout;
+    ~MIDI4L() {
+        if(midiin) {
+            midiin->cancelCallback();
+            midiin->closePort();
+            delete midiin;
+        }
+        if(midiout) {
+            midiout->closePort();
+            delete midiout;
+        }
     }
     
     
