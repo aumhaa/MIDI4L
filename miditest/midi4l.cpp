@@ -23,6 +23,27 @@ t_symbol *SYM_SPACE  = gensym(" ");
 void midiInputCallback(double deltatime, midimessage *message, void *userData);
 
 
+static inline std::string &trim(std::string &s)
+{
+    std::string::size_type pos = s.find_last_not_of(' ');
+    if(pos != std::string::npos) {
+        if (s.length()!=pos+1) {
+            // erase trailing whitespace
+            s.erase(pos+1);
+        }
+        pos = s.find_first_not_of(' ');
+        if(pos!=0) {
+            // erase leading whitespace
+            s.erase(0, pos);
+        }
+    }
+    else {
+        // all whitespace
+        s="";
+    }
+    return s;
+}
+
 
 class MIDI4L : public MaxCpp6<MIDI4L> {
     
@@ -60,6 +81,14 @@ public:
         
         refreshPorts();
         // printPorts();
+        
+        if(ac > 0) { // first arg is inport
+            inport(0, SYM_SPACE, ac, av);
+        }
+        
+        if(ac > 1) { // second arg is outport
+            outport(0, SYM_SPACE, ac-1, av+1);
+        }
 	}
 	
     ~MIDI4L() {
@@ -148,6 +177,10 @@ public:
     void inport(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
+        // TODO: maybe handle ints (and floats cast to int) and use it to lookup a port by index.
+        // Could be a useful for someone with devices with duplicate names.
+        // See simplemax_new for an example of how to check the atom type
+        
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
             if (midiin) {
                 int portIndex = getPortIndex(inPortMap, portName);
@@ -172,7 +205,7 @@ public:
             // else we already printed an error in the constructor
         }
         else {
-            error("Invalid inport message. A portname is required. Or use (inport \" \") to close the port.");
+            error("Invalid inport. A portname is required. Or use (inport \" \") to close the port.");
         }
     }
     
@@ -185,6 +218,10 @@ public:
      */
     void outport(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
+        
+        // TODO: maybe handle ints (and floats cast to int) and use it to lookup a port by index.
+        // Could be a useful for someone with devices with duplicate names.
+        // See simplemax_new for an example of how to check the atom type
         
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
             if (midiout) {
@@ -207,7 +244,7 @@ public:
             // else we already printed an error in the constructor
         }
         else {
-            error("Invalid outport message. A portname is required. Or use (outport \" \") to close the port.");
+            error("Invalid outport. A portname is required. Or use (outport \" \") to close the port.");
         }
     }
     
@@ -271,6 +308,10 @@ private:
             for ( int i=0; i<numInPorts; i++ ) {
                 try {
                     std::string portName = midiin->getPortName(i);
+
+                    // CME Xkey reports its name as "Xkey  ", which was a hassle to deal with in a Max patch, so auto-trim the names.
+                    portName = trim(portName);
+                    
                     strncpy(cPortName, portName.c_str(), MAX_STR_SIZE);
                     cPortName[MAX_STR_SIZE - 1] = NULL;
                     
@@ -287,6 +328,10 @@ private:
             for ( int i=0; i<numOutPorts; i++ ) {
                 try {
                     std::string portName = midiout->getPortName(i);
+                    
+                    // CME Xkey reports its name as "Xkey  ", which was a hassle to deal with in a Max patch, so auto-trim the names.
+                    portName = trim(portName);
+                    
                     strncpy(cPortName, portName.c_str(), MAX_STR_SIZE);
                     cPortName[MAX_STR_SIZE - 1] = NULL;
                     
