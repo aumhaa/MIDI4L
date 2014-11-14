@@ -218,30 +218,24 @@ public:
      */
     void receivemidi(midimessage *message) {
         if(message) {
-            int byteCount = message->size();
-            if(byteCount > 0) {
-                if(message->front() == SYSEX_START) {
-                    isSysEx = true;
-                }
-
-                void *outlet;
-                if(isSysEx) {
-                    outlet = m_outlets[OUTLET_SYSEX];
-                }
-                else {
-                    outlet = m_outlets[OUTLET_MIDI];
-                }
+            void *midiOutlet = m_outlets[OUTLET_MIDI];
+            void *sysexOutlet = m_outlets[OUTLET_SYSEX];
             
-                if(outlet) {
-                    for (int i=0; i<byteCount; i++) {
-                        outlet_int(outlet, message->at(i));
-                    }
-                }
+            if(midiOutlet && sysexOutlet) {
                 
-                // Is it safe to assume the last byte of a sysex message is the SYSEX_STOP value?
-                // Could it be padded with 0s at the end? Do we need to look at every byte in the message?
-                if(message->back() == SYSEX_STOP) {
-                    isSysEx = false;
+                int byteCount = message->size();                
+                for(int i=0; i<byteCount; i++) {
+                    int byte = (int)message->at(i);
+          
+                    if(byte == SYSEX_START) {
+                        isSysEx = true;
+                    }
+          
+                    outlet_int(isSysEx ? sysexOutlet : midiOutlet, byte);
+          
+                    if(byte == SYSEX_STOP) {
+                        isSysEx = false;
+                    }
                 }
             }
         }
