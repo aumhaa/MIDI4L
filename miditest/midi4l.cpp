@@ -3,17 +3,22 @@
 #include "maxcpp6.h"
 
 typedef std::map<t_symbol*,int> portmap;
+typedef std::vector<unsigned char> midimessage;
 
 const int MAX_STR_SIZE = 512;
 
-const int OUTLET_MIDIIN   = 0;
-const int OUTLET_INPORTS  = 1;
-const int OUTLET_OUTPORTS = 2;
+const int OUTLET_MIDI     = 0;
+const int OUTLET_SYSEX    = 1;
+const int OUTLET_INPORTS  = 2;
+const int OUTLET_OUTPORTS = 3;
+
+const int SYSEX_START = 0xF0;
+const int SYSEX_STOP  = 0xF7;
 
 t_symbol *SYM_APPEND = gensym("append");
 t_symbol *SYM_CLEAR  = gensym("clear");
 
-void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData );
+void midiInputCallback(double deltatime, midimessage *message, void *userData);
 
 
 
@@ -21,8 +26,17 @@ class MIDI4L : public MaxCpp6<MIDI4L> {
     
 public:
     
-	MIDI4L(t_symbol * sym, long ac, t_atom * av) {
-		setupIO(1, 3); // inlets / outlets
+    MIDI4L(t_symbol * sym, long ac, t_atom * av) :
+        midiin(NULL),
+        midiout(NULL),
+        numInPorts(-1),
+        numOutPorts(-1),
+        inPortMap(),
+        outPortMap(),
+        message(),
+        isSysEx(false)
+    {
+		setupIO(1, 4); // inlets / outlets
         
         try {
             midiin = new RtMidiIn();
@@ -55,12 +69,15 @@ public:
      */
     void assist(void *b, long io, long index, char *msg) {
         if (io == ASSIST_INLET) {
-            strncpy_zero(msg, "send MIDI output (list), list ports (bang), set input port (inport name), set output port (outport name)", MAX_STR_SIZE);
+            strncpy_zero(msg, "(sendmidi list) send MIDI to output port, (bang) list ports, (inport name) set input port, (outport name) set output port", MAX_STR_SIZE);
         }
         else if (io==ASSIST_OUTLET) {
             switch (index) {
-                case OUTLET_MIDIIN:
-                    strncpy_zero(msg, "receive MIDI input", MAX_STR_SIZE);
+                case OUTLET_MIDI:
+                    strncpy_zero(msg, "MIDI from input port", MAX_STR_SIZE);
+                    break;
+                case OUTLET_SYSEX:
+                    strncpy_zero(msg, "SysEx from input port", MAX_STR_SIZE);
                     break;
                 case OUTLET_INPORTS:
                     strncpy_zero(msg, "input port list", MAX_STR_SIZE);
@@ -120,13 +137,13 @@ public:
         t_symbol *portName = _sym_nothing;
         
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
-            post("Got inport name %s", *portName);
+            //post("Got inport name %s", *portName);
             int portIndex = getPortIndex(inPortMap, portName);
             if (midiin && portIndex >= 0) {
                 midiin->cancelCallback();
                 midiin->closePort();                
                 
-                post("Opening input port at index %i", portIndex);
+                //post("Opening input port at index %i", portIndex);
                 midiin->openPort( portIndex );
                 midiin->setCallback( &midiInputCallback, this );
                 midiin->ignoreTypes( false, true, true ); // ignore MIDI timing and active sensing messages (but not SysEx)
@@ -148,12 +165,12 @@ public:
         t_symbol *portName = _sym_nothing;
         
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
-            post("Got outport name %s", *portName);
+            //post("Got outport name %s", *portName);
             int portIndex = getPortIndex(outPortMap, portName);
             if (midiout && portIndex >= 0) {
                 midiout->closePort();
                 
-                post("Opening output port at index %i", portIndex);
+                //post("Opening output port at index %i", portIndex);
                 midiout->openPort( portIndex );
                 // TODO? midiout->setErrorCallback()
             }
@@ -168,17 +185,33 @@ public:
      * Pass a multi-byte MIDI message received from midiin to the outlet.
      * This is an internal callback, it is not part of the interface with the Max patch.
      */
-    void receivemidi(std::vector< unsigned char > *message) {
-        void *outlet = m_outlets[0];
-        
-        if(outlet && message) { // these somehow can end up NULL in M4L when switching between Max and Live
-            int nBytes = message->size();
-            for ( int i=0; i<nBytes; i++ ) {
-                // TODO: send SysEx messages to a different outlet (note, the current message may be one part of a long SysEx stream,
-                // so we are going to have to keep track of SysEx state across multiple messages)
+    void receivemidi(midimessage *message) {
+        if(message) {
+            int byteCount = message->size();
+            if(byteCount > 0) {
+                if(message->front() == SYSEX_START) {
+                    isSysEx = true;
+                }
+
+                void *outlet;
+                if(isSysEx) {
+                    outlet = m_outlets[OUTLET_SYSEX];
+                }
+                else {
+                    outlet = m_outlets[OUTLET_MIDI];
+                }
+            
+                if(outlet) {
+                    for (int i=0; i<byteCount; i++) {
+                        outlet_int(outlet, message->at(i));
+                    }
+                }
                 
-                int byte = (int)message->at(i);
-                outlet_int(outlet, byte);
+                // Is it safe to assume the last byte of a sysex message is the SYSEX_STOP value?
+                // Could it be padded with 0s at the end? Do we need to look at every byte in the message?
+                if(message->back() == SYSEX_STOP) {
+                    isSysEx = false;
+                }
             }
         }
     }
@@ -186,13 +219,14 @@ public:
     
 private:
     
-    RtMidiIn  *midiin  = NULL;
-    RtMidiOut *midiout = NULL;
-    int numInPorts  = -1;
-    int numOutPorts = -1;
+    RtMidiIn  *midiin;
+    RtMidiOut *midiout;
+    int numInPorts;
+    int numOutPorts;
     portmap inPortMap;
     portmap outPortMap;
-    std::vector<unsigned char> message;
+    midimessage message;
+    bool isSysEx;
     
     
     /**
@@ -307,7 +341,7 @@ private:
 };
 
 
-void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData ) {
+void midiInputCallback(double deltatime, midimessage *message, void *userData) {
     ((MIDI4L*)userData)->receivemidi(message);
 }
 

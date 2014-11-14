@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 593.0, 569.0, 907.0, 670.0 ],
+		"rect" : [ 190.0, 341.0, 930.0, 803.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -38,6 +38,18 @@
 		"subpatcher_template" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-7",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 70.666664, 443.0, 68.0, 22.0 ],
+					"style" : "",
+					"text" : "print sysex"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-5",
 					"maxclass" : "button",
 					"numinlets" : 1,
@@ -55,7 +67,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 450.5, 378.0, 155.0, 87.0 ],
+					"patching_rect" : [ 460.333344, 378.0, 155.0, 87.0 ],
 					"style" : "",
 					"text" : "NOTE: the port is not opened until you explicitly select one. So the ports initially displayed in the umenu when you open this patch are not open yet."
 				}
@@ -564,7 +576,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 325.0, 356.0, 50.0, 20.0 ],
+					"patching_rect" : [ 334.833344, 356.0, 50.0, 20.0 ],
 					"style" : "",
 					"text" : "outputs"
 				}
@@ -578,7 +590,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 142.0, 356.0, 45.0, 20.0 ],
+					"patching_rect" : [ 151.833328, 356.0, 45.0, 20.0 ],
 					"style" : "",
 					"text" : "inputs"
 				}
@@ -593,7 +605,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 338.0, 421.0, 65.0, 22.0 ],
+					"patching_rect" : [ 347.833344, 410.5, 65.0, 22.0 ],
 					"style" : "",
 					"text" : "outport $1"
 				}
@@ -608,7 +620,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 154.0, 421.0, 57.0, 22.0 ],
+					"patching_rect" : [ 163.833328, 410.5, 57.0, 22.0 ],
 					"style" : "",
 					"text" : "inport $1"
 				}
@@ -620,13 +632,13 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-3",
-					"items" : [ "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Xkey  ", ",", "SimpleSynth virtual input", ",", "to Max 1", ",", "to Max 2" ],
+					"items" : [ "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Xkey  ", ",", "SimpleSynth virtual input", ",", "to Max 1", ",", "to Max 2", ",", "Ableton Push Live Port", ",", "Ableton Push User Port" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "int", "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 265.0, 378.0, 165.0, 22.0 ],
+					"patching_rect" : [ 274.833344, 378.0, 165.0, 22.0 ],
 					"style" : ""
 				}
 
@@ -637,13 +649,13 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-2",
-					"items" : [ "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Virtual MIDI Driver Game Controller 1", ",", "Virtual MIDI Driver Game Controller 2", ",", "Virtual MIDI Driver Game Controller 3", ",", "Virtual MIDI Driver Game Controller 4", ",", "Xkey  ", ",", "from Max 1", ",", "from Max 2" ],
+					"items" : [ "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Virtual MIDI Driver Game Controller 1", ",", "Virtual MIDI Driver Game Controller 2", ",", "Virtual MIDI Driver Game Controller 3", ",", "Virtual MIDI Driver Game Controller 4", ",", "Xkey  ", ",", "from Max 1", ",", "from Max 2", ",", "Ableton Push Live Port", ",", "Ableton Push User Port" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "int", "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 79.5, 378.0, 168.0, 22.0 ],
+					"patching_rect" : [ 89.333336, 378.0, 168.0, 22.0 ],
 					"style" : ""
 				}
 
@@ -655,8 +667,8 @@
 					"id" : "obj-1",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
-					"numoutlets" : 3,
-					"outlettype" : [ "", "", "" ],
+					"numoutlets" : 4,
+					"outlettype" : [ "", "", "", "" ],
 					"patching_rect" : [ 52.0, 310.0, 75.0, 22.0 ],
 					"style" : "",
 					"text" : "midi4l"
@@ -682,7 +694,7 @@
 					"destination" : [ "obj-2", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"source" : [ "obj-1", 1 ]
+					"source" : [ "obj-1", 2 ]
 				}
 
 			}
@@ -700,7 +712,16 @@
 					"destination" : [ "obj-3", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"source" : [ "obj-1", 2 ]
+					"source" : [ "obj-1", 3 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-7", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-1", 1 ]
 				}
 
 			}
@@ -898,7 +919,7 @@
 					"destination" : [ "obj-1", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 347.5, 451.0, 436.0, 451.0, 436.0, 300.0, 61.5, 300.0 ],
+					"midpoints" : [ 357.333344, 442.0, 447.0, 442.0, 447.0, 300.0, 61.5, 300.0 ],
 					"source" : [ "obj-4", 0 ]
 				}
 
@@ -1007,7 +1028,7 @@
 					"destination" : [ "obj-1", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 163.5, 451.0, 436.0, 451.0, 436.0, 300.0, 61.5, 300.0 ],
+					"midpoints" : [ 173.333328, 442.0, 447.0, 442.0, 447.0, 300.0, 61.5, 300.0 ],
 					"source" : [ "obj-9", 0 ]
 				}
 
