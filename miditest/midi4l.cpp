@@ -165,10 +165,10 @@ public:
     
     
     /**
-     * Send a multi-byte MIDI message to the outlet.
-     * This is part of the midiin callback, it is not part of the interface with the Max patch.
+     * Pass a multi-byte MIDI message received from midiin to the outlet.
+     * This is an internal callback, it is not part of the interface with the Max patch.
      */
-    void sendMidi(std::vector< unsigned char > *message) {
+    void receivemidi(std::vector< unsigned char > *message) {
         void *outlet = m_outlets[0];
         
         if(outlet && message) { // these somehow can end up NULL in M4L when switching between Max and Live
@@ -308,7 +308,7 @@ private:
 
 
 void midiInputCallback( double deltatime, std::vector< unsigned char > *message, void *userData ) {
-    ((MIDI4L*)userData)->sendMidi(message);
+    ((MIDI4L*)userData)->receivemidi(message);
 }
 
 
