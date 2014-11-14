@@ -41,7 +41,7 @@ public:
         }
         
         refreshPorts();
-        printPorts(); // TODO: comment this out before shipping
+        // printPorts(); 
 	}
 	
     MIDI4L() {
