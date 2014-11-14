@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 190.0, 341.0, 930.0, 803.0 ],
+		"rect" : [ 190.0, 341.0, 928.0, 803.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -57,19 +57,6 @@
 					"outlettype" : [ "bang" ],
 					"patching_rect" : [ 52.0, 262.0, 24.0, 24.0 ],
 					"style" : ""
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-37",
-					"linecount" : 6,
-					"maxclass" : "comment",
-					"numinlets" : 1,
-					"numoutlets" : 0,
-					"patching_rect" : [ 460.333344, 378.0, 155.0, 87.0 ],
-					"style" : "",
-					"text" : "NOTE: the port is not opened until you explicitly select one. So the ports initially displayed in the umenu when you open this patch are not open yet."
 				}
 
 			}
@@ -632,7 +619,7 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-3",
-					"items" : [ "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Xkey  ", ",", "SimpleSynth virtual input", ",", "to Max 1", ",", "to Max 2", ",", "Ableton Push Live Port", ",", "Ableton Push User Port" ],
+					"items" : [ " ", ",", "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Ableton Push Live Port", ",", "Ableton Push User Port", ",", "Xkey  ", ",", "SimpleSynth virtual input", ",", "to Max 1", ",", "to Max 2" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
@@ -649,7 +636,7 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-2",
-					"items" : [ "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Virtual MIDI Driver Game Controller 1", ",", "Virtual MIDI Driver Game Controller 2", ",", "Virtual MIDI Driver Game Controller 3", ",", "Virtual MIDI Driver Game Controller 4", ",", "Xkey  ", ",", "from Max 1", ",", "from Max 2", ",", "Ableton Push Live Port", ",", "Ableton Push User Port" ],
+					"items" : [ " ", ",", "IAC Driver IAC Bus 1", ",", "IAC Driver IAC Bus 2", ",", "IAC Driver IAC Bus 3", ",", "IAC Driver IAC Bus 4", ",", "IAC Driver IAC Bus 5", ",", "IAC Driver IAC Bus 6", ",", "IAC Driver IAC Bus 7", ",", "IAC Driver IAC Bus 8", ",", "IAC Driver TO LOGIC", ",", "Network iPhone", ",", "Network iPad", ",", "Ableton Push Live Port", ",", "Ableton Push User Port", ",", "Virtual MIDI Driver Game Controller 1", ",", "Virtual MIDI Driver Game Controller 2", ",", "Virtual MIDI Driver Game Controller 3", ",", "Virtual MIDI Driver Game Controller 4", ",", "Xkey  ", ",", "from Max 1", ",", "from Max 2" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,

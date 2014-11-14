@@ -17,6 +17,8 @@ const int SYSEX_STOP  = 0xF7;
 
 t_symbol *SYM_APPEND = gensym("append");
 t_symbol *SYM_CLEAR  = gensym("clear");
+t_symbol *SYM_SET    = gensym("set");
+t_symbol *SYM_SPACE  = gensym(" ");
 
 void midiInputCallback(double deltatime, midimessage *message, void *userData);
 
@@ -33,6 +35,8 @@ public:
         numOutPorts(-1),
         inPortMap(),
         outPortMap(),
+        inPortName(NULL),
+        outPortName(NULL),
         message(),
         isSysEx(false)
     {
@@ -103,8 +107,8 @@ public:
      */
 	void bang(long inlet) {
         refreshPorts();
-        dumpPorts(m_outlets[OUTLET_INPORTS],  inPortMap);
-        dumpPorts(m_outlets[OUTLET_OUTPORTS], outPortMap);
+        dumpPorts(m_outlets[OUTLET_INPORTS],  inPortMap,  inPortName);
+        dumpPorts(m_outlets[OUTLET_OUTPORTS], outPortMap, outPortName);
     }
     
     
@@ -139,26 +143,36 @@ public:
      * Set the input port by name.
      * If the name is valid, this object will start sending messages out it's outlet when MIDI is received.
      * If the name is invalid, an error is printed to the Max console and nothing else happens.
+     * As a special behavior, sending the [inport " "] message will close the port. This plays nice with the way we build the umenu port list.
      */
     void inport(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
-            //post("Got inport name %s", *portName);
-            int portIndex = getPortIndex(inPortMap, portName);
-            if (midiin && portIndex >= 0) {
-                midiin->cancelCallback();
-                midiin->closePort();                
+            if (midiin) {
+                int portIndex = getPortIndex(inPortMap, portName);
                 
-                //post("Opening input port at index %i", portIndex);
-                midiin->openPort( portIndex );
-                midiin->setCallback( &midiInputCallback, this );
-                midiin->ignoreTypes( false, true, true ); // ignore MIDI timing and active sensing messages (but not SysEx)
-                // TODO? midiin->setErrorCallback()
+                if(portIndex >= 0 || portName == SYM_SPACE) {
+                    midiin->cancelCallback();
+                    midiin->closePort();
+                    inPortName = NULL;
+                }
+                
+                if(portIndex >= 0) {
+                    midiin->openPort( portIndex );
+                    midiin->setCallback( &midiInputCallback, this );
+                    midiin->ignoreTypes( false, true, true ); // ignore MIDI timing and active sensing messages (but not SysEx)
+                    // TODO? midiin->setErrorCallback()
+                    inPortName = portName;
+                }
+                else if(portName != SYM_SPACE) {
+                    error("Input port not found: %s", *portName);
+                }
             }
+            // else we already printed an error in the constructor
         }
         else {
-            error("Invalid inport message. A portname is required");
+            error("Invalid inport message. A portname is required. Or use (inport \" \") to close the port.");
         }
     }
     
@@ -167,23 +181,33 @@ public:
      * Set the output port by name.
      * If the name is valid, this object will pass messages received to it's first inlet to the MIDI port.
      * If the name is invalid, an error is printed to the Max console and nothing else happens.
+     * As a special behavior, sending the [outport " "] message will close the port. This plays nice with the way we build the umenu port list.
      */
     void outport(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
         if( atom_arg_getsym(&portName, 0, ac, av) == MAX_ERR_NONE ) {
-            //post("Got outport name %s", *portName);
-            int portIndex = getPortIndex(outPortMap, portName);
-            if (midiout && portIndex >= 0) {
-                midiout->closePort();
+            if (midiout) {
+                int portIndex = getPortIndex(outPortMap, portName);
                 
-                //post("Opening output port at index %i", portIndex);
-                midiout->openPort( portIndex );
-                // TODO? midiout->setErrorCallback()
+                if(portIndex >= 0 || portName == SYM_SPACE) {
+                    midiout->closePort();
+                    outPortName = NULL;
+                }
+                
+                if(portIndex >= 0) {
+                    midiout->openPort( portIndex );
+                    // TODO? midiout->setErrorCallback()
+                    outPortName = portName;
+                }
+                else if(portName != SYM_SPACE) {
+                    error("Output port not found: %s", *portName);
+                }
             }
+            // else we already printed an error in the constructor
         }
         else {
-            error("Invalid outport message. A portname is required");
+            error("Invalid outport message. A portname is required. Or use (outport \" \") to close the port.");
         }
     }
     
@@ -232,6 +256,8 @@ private:
     int numOutPorts;
     portmap inPortMap;
     portmap outPortMap;
+    t_symbol *inPortName;
+    t_symbol *outPortName;
     midimessage message;
     bool isSysEx;
     
@@ -288,7 +314,6 @@ private:
     int getPortIndex(portmap portMap, t_symbol *portName) {
         portmap::iterator iter = portMap.find(portName);
         if (iter == portMap.end()) {
-            error("Port not found: %s", *portName);
             return -1;
         }
         else {
@@ -321,15 +346,23 @@ private:
     /**
      * Send messages to build a umenus for the input (2nd outlet) and output (3rd outlet) ports
      */
-    void dumpPorts(void *outlet, portmap portMap) {
+    void dumpPorts(void *outlet, portmap portMap, t_symbol *selectedPort) {
         t_atom atoms[1];
         
         outlet_anything(outlet, SYM_CLEAR, 0, NULL);
+        
+        atom_setsym(&atoms[0], SYM_SPACE); // start the umenu with a blank item, to indicate no port is selected
+        outlet_anything(outlet, SYM_APPEND, 1, atoms);
         
         for( portmap::iterator iter=portMap.begin(); iter!=portMap.end(); iter++ ) {
             t_symbol *portName = (*iter).first;
             atom_setsym(&atoms[0], portName);
             outlet_anything(outlet, SYM_APPEND, 1, atoms);
+        }
+        
+        if(selectedPort) {
+            atom_setsym(&atoms[0], selectedPort);
+            outlet_anything(outlet, SYM_SET, 1, atoms);
         }
     }
     
