@@ -18,7 +18,7 @@ const int SYSEX_STOP  = 0xF7;
 t_symbol *SYM_APPEND = gensym("append");
 t_symbol *SYM_CLEAR  = gensym("clear");
 t_symbol *SYM_SET    = gensym("set");
-t_symbol *SYM_SPACE  = gensym(" ");
+t_symbol *SYM_NONE  = gensym("<none>");
 
 void midiInputCallback(double deltatime, midimessage *message, void *userData);
 
@@ -82,12 +82,12 @@ public:
         refreshPorts();
         // printPorts();
         
-        if(ac > 0) { // first arg is inport
-            inport(0, SYM_SPACE, ac, av);
+        if(ac > 0) { // first arg is input
+            input(0, NULL, ac, av);
         }
         
-        if(ac > 1) { // second arg is outport
-            outport(0, SYM_SPACE, ac-1, av+1);
+        if(ac > 1) { // second arg is output
+            output(0, NULL, ac-1, av+1);
         }
 	}
 	
@@ -109,7 +109,7 @@ public:
      */
     void assist(void *b, long io, long index, char *msg) {
         if (io == ASSIST_INLET) {
-            strncpy_zero(msg, "(sendmidi list) send MIDI to output port, (bang) list ports, (inport name) set input port, (outport name) set output port", MAX_STR_SIZE);
+            strncpy_zero(msg, "(send list) send MIDI to output port, (bang) list ports, (input name) set input port, (output name) set output port", MAX_STR_SIZE);
         }
         else if (io==ASSIST_OUTLET) {
             switch (index) {
@@ -142,39 +142,12 @@ public:
     
     
     /**
-     * Receives MIDI message bytes from the Max patch and sends them to the midiout.
-     * NOTE: RtMidi needs to send all bytes of a MIDI on message at the same time.
-     *       To achieve this, in Max, you should do [midiformat] => [thresh] => [prepend sendmidi] => [midi4l]
-     *       I use [thresh 1] to minimize the latency. So far it seems safe to do so.
-     */
-    void sendmidi(long inlet, t_symbol *s, long ac, t_atom *av) {
-        message.clear();
-        for (int i=0; i<ac; i++) {
-            unsigned char value = atom_getlong(av+i);
-            message.push_back(value);
-        }
-        
-        /*
-        post("Sending MIDI message");
-        int nBytes = message.size();
-        for ( int i=0; i<nBytes; i++ ) {
-            post("%i", message.at(i));
-        } 
-        */
-        
-        if(midiout && midiout->isPortOpen()) {
-            midiout->sendMessage( &message );
-        }
-    }
-    
-    
-    /**
      * Set the input port by name.
      * If the name is valid, this object will start sending messages out it's outlet when MIDI is received.
      * If the name is invalid, an error is printed to the Max console and nothing else happens.
      * As a special behavior, sending the [inport " "] message will close the port. This plays nice with the way we build the umenu port list.
      */
-    void inport(long inlet, t_symbol *s, long ac, t_atom *av) {
+    void input(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
         // TODO: maybe handle ints (and floats cast to int) and use it to lookup a port by index.
@@ -185,7 +158,7 @@ public:
             if (midiin) {
                 int portIndex = getPortIndex(inPortMap, portName);
                 
-                if(portIndex >= 0 || portName == SYM_SPACE) {
+                if(portIndex >= 0 || portName == SYM_NONE) {
                     midiin->cancelCallback();
                     midiin->closePort();
                     inPortName = NULL;
@@ -198,7 +171,7 @@ public:
                     // TODO? midiin->setErrorCallback()
                     inPortName = portName;
                 }
-                else if(portName != SYM_SPACE) {
+                else if(portName != SYM_NONE) {
                     error("Input port not found: %s", *portName);
                 }
             }
@@ -216,7 +189,7 @@ public:
      * If the name is invalid, an error is printed to the Max console and nothing else happens.
      * As a special behavior, sending the [outport " "] message will close the port. This plays nice with the way we build the umenu port list.
      */
-    void outport(long inlet, t_symbol *s, long ac, t_atom *av) {
+    void output(long inlet, t_symbol *s, long ac, t_atom *av) {
         t_symbol *portName = _sym_nothing;
         
         // TODO: maybe handle ints (and floats cast to int) and use it to lookup a port by index.
@@ -227,7 +200,7 @@ public:
             if (midiout) {
                 int portIndex = getPortIndex(outPortMap, portName);
                 
-                if(portIndex >= 0 || portName == SYM_SPACE) {
+                if(portIndex >= 0 || portName == SYM_NONE) {
                     midiout->closePort();
                     outPortName = NULL;
                 }
@@ -237,7 +210,7 @@ public:
                     // TODO? midiout->setErrorCallback()
                     outPortName = portName;
                 }
-                else if(portName != SYM_SPACE) {
+                else if(portName != SYM_NONE) {
                     error("Output port not found: %s", *portName);
                 }
             }
@@ -250,10 +223,37 @@ public:
     
     
     /**
-     * Pass a multi-byte MIDI message received from midiin to the outlet.
-     * This is an internal callback, it is not part of the interface with the Max patch.
+     * Receives MIDI message bytes from the Max patch and sends them to the midiout.
+     * NOTE: RtMidi needs to send all bytes of a MIDI on message at the same time.
+     *       To achieve this, in Max, you should do [midiformat] => [thresh] => [prepend sendmidi] => [midi4l]
+     *       I use [thresh 1] to minimize the latency. So far it seems safe to do so.
      */
-    void receivemidi(midimessage *message) {
+    void send(long inlet, t_symbol *s, long ac, t_atom *av) {
+        message.clear();
+        for (int i=0; i<ac; i++) {
+            unsigned char value = atom_getlong(av+i);
+            message.push_back(value);
+        }
+        
+        /*
+         post("Sending MIDI message");
+         int nBytes = message.size();
+         for ( int i=0; i<nBytes; i++ ) {
+         post("%i", message.at(i));
+         }
+         */
+        
+        if(midiout && midiout->isPortOpen()) {
+            midiout->sendMessage( &message );
+        }
+    }
+    
+    
+    /**
+     * Pass a multi-byte MIDI message received from midiin to the outlet.
+     * NOTE: This is an internal callback, it is not part of the interface with the Max patch.
+     */
+    void receive(midimessage *message) {
         if(message) {
             void *midiOutlet = m_outlets[OUTLET_MIDI];
             void *sysexOutlet = m_outlets[OUTLET_SYSEX];
@@ -390,19 +390,22 @@ private:
         
         outlet_anything(outlet, SYM_CLEAR, 0, NULL);
         
-        atom_setsym(&atoms[0], SYM_SPACE); // start the umenu with a blank item, to indicate no port is selected
-        outlet_anything(outlet, SYM_APPEND, 1, atoms);
-        
         for( portmap::iterator iter=portMap.begin(); iter!=portMap.end(); iter++ ) {
             t_symbol *portName = (*iter).first;
             atom_setsym(&atoms[0], portName);
             outlet_anything(outlet, SYM_APPEND, 1, atoms);
         }
         
+        atom_setsym(&atoms[0], SYM_NONE); // start the umenu with a blank item, to indicate no port is selected
+        outlet_anything(outlet, SYM_APPEND, 1, atoms);
+        
         if(selectedPort) {
             atom_setsym(&atoms[0], selectedPort);
-            outlet_anything(outlet, SYM_SET, 1, atoms);
         }
+        else {
+            atom_setsym(&atoms[0], SYM_NONE);
+        }
+        outlet_anything(outlet, SYM_SET, 1, atoms);
     }
     
     
@@ -421,16 +424,18 @@ private:
 
 
 void midiInputCallback(double deltatime, midimessage *message, void *userData) {
-    ((MIDI4L*)userData)->receivemidi(message);
+    ((MIDI4L*)userData)->receive(message);
 }
 
 
 
 C74_EXPORT int main(void) {
 	MIDI4L::makeMaxClass("midi4l");
+    
     REGISTER_METHOD_ASSIST(MIDI4L, assist);
+    
     REGISTER_METHOD(MIDI4L, bang);
-    REGISTER_METHOD_GIMME(MIDI4L, sendmidi);
-    REGISTER_METHOD_GIMME(MIDI4L, inport);
-    REGISTER_METHOD_GIMME(MIDI4L, outport);
+    REGISTER_METHOD_GIMME(MIDI4L, send);
+    REGISTER_METHOD_GIMME(MIDI4L, input);
+    REGISTER_METHOD_GIMME(MIDI4L, output);
 }

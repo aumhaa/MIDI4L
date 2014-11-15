@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 340.0, 363.0, 767.0, 679.0 ],
+		"rect" : [ 146.0, 282.0, 781.0, 679.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -41,13 +41,13 @@
 					"bubble" : 1,
 					"bubbleside" : 0,
 					"id" : "obj-64",
-					"linecount" : 3,
+					"linecount" : 2,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 446.833344, 170.0, 257.166656, 66.0 ],
+					"patching_rect" : [ 431.0, 169.0, 275.0, 52.0 ],
 					"style" : "",
-					"text" : "inputs and outputs can be set with arguments. Use \" \" (a quoted space) for the first argument to set no input."
+					"text" : "inputs and outputs can be set with arguments. Use <none> for the first argument to set no input."
 				}
 
 			}
@@ -71,13 +71,13 @@
 				"box" : 				{
 					"bubble" : 1,
 					"id" : "obj-59",
-					"linecount" : 3,
+					"linecount" : 5,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 615.0, 463.0, 125.0, 51.0 ],
+					"patching_rect" : [ 614.5, 410.5, 152.0, 78.0 ],
 					"style" : "",
-					"text" : "inport and outport messages set the input and output"
+					"text" : "The input and output messages set the MIDI input and output ports. A value of <none> closes the MIDI port."
 				}
 
 			}
@@ -89,7 +89,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 301.333313, 259.5, 321.833313, 51.0 ],
+					"patching_rect" : [ 275.166656, 259.5, 325.0, 51.0 ],
 					"style" : "",
 					"text" : "MIDI messages from midiformat (and sxformat) are split into inidividual numbers. midi4l needs the data as a single message. Use thresh to make a single message."
 				}
@@ -103,9 +103,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 301.333313, 321.5, 196.0, 37.0 ],
+					"patching_rect" : [ 275.166656, 321.5, 201.0, 37.0 ],
 					"style" : "",
-					"text" : "The sendmidi message sends MIDI (and SysEx) to the output"
+					"text" : "The send message sends MIDI (and SysEx) to the output"
 				}
 
 			}
@@ -284,7 +284,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 190.166656, 274.0, 110.0, 22.0 ],
+					"patching_rect" : [ 190.166656, 274.0, 84.0, 22.0 ],
 					"style" : "",
 					"text" : "thresh 1"
 				}
@@ -310,7 +310,7 @@
 					"numinlets" : 7,
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
-					"patching_rect" : [ 190.166656, 239.0, 110.0, 22.0 ],
+					"patching_rect" : [ 190.166656, 239.0, 84.0, 22.0 ],
 					"style" : "",
 					"text" : "midiformat"
 				}
@@ -783,9 +783,9 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 513.90741, 477.5, 65.0, 22.0 ],
+					"patching_rect" : [ 513.90741, 477.5, 61.0, 22.0 ],
 					"style" : "",
-					"text" : "outport $1"
+					"text" : "output $1"
 				}
 
 			}
@@ -798,9 +798,9 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 329.90741, 477.5, 57.0, 22.0 ],
+					"patching_rect" : [ 329.90741, 477.5, 53.0, 22.0 ],
 					"style" : "",
-					"text" : "inport $1"
+					"text" : "input $1"
 				}
 
 			}
@@ -860,9 +860,9 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 190.166656, 329.0, 110.0, 22.0 ],
+					"patching_rect" : [ 190.166656, 329.0, 84.0, 22.0 ],
 					"style" : "",
-					"text" : "prepend sendmidi"
+					"text" : "prepend send"
 				}
 
 			}
