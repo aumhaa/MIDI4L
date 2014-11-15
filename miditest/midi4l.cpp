@@ -67,16 +67,14 @@ public:
             midiin = new RtMidiIn();
         }
         catch ( RtMidiError &error ) {
-            error("RtMidiIn constructor failure");
-            printError(error);
+            printError("RtMidiIn constructor failure", error);
         }
         
         try {
             midiout = new RtMidiOut();
         }
         catch ( RtMidiError &error ) {
-            error("RtMidiOut consturctor failure");
-            printError(error);
+            printError("RtMidiOut consturctor failure", error);
         }
         
         refreshPorts();
@@ -172,13 +170,13 @@ public:
                     inPortName = portName;
                 }
                 else if(portName != SYM_NONE) {
-                    error("Input port not found: %s", *portName);
+                    object_error((t_object *)this, "Input port not found: %s", *portName);
                 }
             }
             // else we already printed an error in the constructor
         }
         else {
-            error("Invalid inport. A portname is required. Or use (inport \" \") to close the port.");
+            object_error((t_object *)this, "Invalid input. A portname is required. Or use (input <none>) to close the port.");
         }
     }
     
@@ -211,13 +209,13 @@ public:
                     outPortName = portName;
                 }
                 else if(portName != SYM_NONE) {
-                    error("Output port not found: %s", *portName);
+                    object_error((t_object *)this, "Output port not found: %s", *portName);
                 }
             }
             // else we already printed an error in the constructor
         }
         else {
-            error("Invalid outport. A portname is required. Or use (outport \" \") to close the port.");
+            object_error((t_object *)this, "Invalid output. A portname is required. Or use (output <none>) to close the port.");
         }
     }
     
@@ -234,14 +232,6 @@ public:
             unsigned char value = atom_getlong(av+i);
             message.push_back(value);
         }
-        
-        /*
-         post("Sending MIDI message");
-         int nBytes = message.size();
-         for ( int i=0; i<nBytes; i++ ) {
-         post("%i", message.at(i));
-         }
-         */
         
         if(midiout && midiout->isPortOpen()) {
             midiout->sendMessage( &message );
@@ -318,8 +308,8 @@ private:
                     inPortMap[gensym(cPortName)] = i;
                 }
                 catch ( RtMidiError &error ) {
-                    error("Error getting MIDI input port name");
-                    printError(error);                }
+                    printError("Error getting MIDI input port name", error);
+                }
             }
         }
         
@@ -338,8 +328,7 @@ private:
                     outPortMap[gensym(cPortName)] = i;
                 }
                 catch (RtMidiError &error) {
-                    error("Error getting MIDI output port name");
-                    printError(error);
+                    printError("Error getting MIDI output port name", error);
                 }
             }
         }
@@ -365,19 +354,19 @@ private:
      * Print the port names to the Max console
      */
     void printPorts() {
-        post("MIDI input Port count: %u", numInPorts);
+        object_post((t_object *)this, "MIDI input Port count: %u", numInPorts);
         
         for( portmap::iterator iter=inPortMap.begin(); iter!=inPortMap.end(); iter++ ) {
             t_symbol *portName = (*iter).first;
-            post("input %u: %s", (*iter).second, *portName);
+            object_post((t_object *)this, "input %u: %s", (*iter).second, *portName);
         }
         
-        post(" ");
-        post("MIDI output port count: %u", numOutPorts);
+        object_post((t_object *)this, " ");
+        object_post((t_object *)this, "MIDI output port count: %u", numOutPorts);
         
         for( portmap::iterator iter=outPortMap.begin(); iter!=outPortMap.end(); iter++ ) {
             t_symbol* portName = (*iter).first;
-            post("output %u: %s", (*iter).second, *portName);
+            object_post((t_object *)this, "output %u: %s", (*iter).second, *portName);
         }
     }
     
@@ -413,12 +402,17 @@ private:
      * Print an RtMidiError to the Max console
      * NOTE: I have not been able to test this code because I don't know how to trigger an RtMidiError. It always "just works" for me.
      */
-    void printError(RtMidiError &error) {
-        std::string msg = error.getMessage();
+    void printError(std::string description, RtMidiError &error) {
         char cstr[MAX_STR_SIZE];
+
+        strncpy(cstr, description.c_str(), MAX_STR_SIZE);
+        cstr[MAX_STR_SIZE - 1] = NULL;
+        object_error((t_object *)this, cstr);
+        
+        std::string msg = error.getMessage();
         strncpy(cstr, msg.c_str(), MAX_STR_SIZE);
         cstr[MAX_STR_SIZE - 1] = NULL;
-        error(cstr);
+        object_error((t_object *)this, cstr);
     }
 };
 
