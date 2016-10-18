@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "2AA20107B955FFFD9EEECA533EE1AC5420D2D409",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "2AA20107B955FFFD9EEECA533EE1AC5420D2D409" : 0,
+    "F8B37696810406D88AF06105033FB3DFACB056AC" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "67B691B5-27B7-4ECF-BD65-034C3DEF1FCC",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "2AA20107B955FFFD9EEECA533EE1AC5420D2D409" : "MIDI4L\/",
+    "F8B37696810406D88AF06105033FB3DFACB056AC" : "maxcpp\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "midi4l",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "miditest\/midi4l.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/aumhaa\/MIDI4L",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2AA20107B955FFFD9EEECA533EE1AC5420D2D409"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/grrrwaaa\/maxcpp",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "F8B37696810406D88AF06105033FB3DFACB056AC"
+    }
+  ]
+}
